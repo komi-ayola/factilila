@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil - FactiLila{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Bienvenue sur FactiLila</h1>
+    <p class="text-center">Gérez facilement vos clients, produits et factures.</p>
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Clients</h5>
+                    <p class="card-text">Gérez vos clients.</p>
+                    <a href="{% url 'client_list' %}" class="btn btn-primary">Voir les clients</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Produits</h5>
+                    <p class="card-text">Gérez vos produits.</p>
+                    <a href="{% url 'produit_list' %}" class="btn btn-primary">Voir les produits</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Factures</h5>
+                    <p class="card-text">Créez et gérez vos factures.</p>
+                    <a href="{% url 'facture_list' %}" class="btn btn-primary">Voir les factures</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Proformas</h5>
+                    <p class="card-text">Créez et gérez vos proformas.</p>
+                    <a href="{% url 'proforma_list' %}" class="btn btn-primary">Voir les proformas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

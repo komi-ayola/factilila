@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails de la facture{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Détails de la facture {{ facture.numero }}</h1>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5>Informations générales</h5>
+            <p><strong>Numéro :</strong> {{ facture.numero }}</p>
+            <p><strong>Client :</strong> {{ facture.client.nom }}</p>
+            <p><strong>Date :</strong> {{ facture.date }}</p>
+            <p><strong>Type :</strong> {{ facture.get_type_facture_display }}</p>
+            <p><strong>Statut :</strong> {{ facture.get_statut_display }}</p>
+            <p><strong>Frais de livraison :</strong> {{ facture.frais_livraison }} FCFA</p>
+            <p><strong>TVA :</strong> {{ facture.tva }} %</p>
+            <p><strong>Remise globale :</strong> 
+                {% if facture.remise_globale_type == 'aucune' %}
+                    Aucune
+                {% else %}
+                    {{ facture.remise_globale_valeur }} {% if facture.remise_globale_type == 'pourcentage' %}%{% else %}FCFA{% endif %}
+                {% endif %}
+            </p>
+
+            <h5 class="mt-4">Lignes de facture</h5>
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Produit</th>
+                        <th>Quantité</th>
+                        <th>Prix unitaire (FCFA)</th>
+                        <th>Remise</th>
+                        <th>Total (FCFA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in facture.lignefacture_set.all %}
+                        <tr>
+                            <td>{{ ligne.produit.nom }}</td>
+                            <td>{{ ligne.quantite }}</td>
+                            <td>{{ ligne.prix_unitaire }}</td>
+                            <td>
+                                {% if ligne.remise_type == 'aucune' %}
+                                    Aucune
+                                {% else %}
+                                    {{ ligne.remise_valeur }} {% if ligne.remise_type == 'pourcentage' %}%{% else %}€{% endif %}
+                                {% endif %}
+                            </td>
+                            <td>{{ ligne.calculer_total|floatformat:2 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucune ligne de facture.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h5 class="mt-4">Résumé</h5>
+            <p><strong>Sous-total :</strong> {{ facture.calculer_sous_total|floatformat:2 }} FCFA</p>
+            <p><strong>Remise globale :</strong> {{ facture.calculer_remise_globale|floatformat:2 }} FCFA</p>
+            <p><strong>Total TTC :</strong> {{ facture.calculer_total_ttc|floatformat:2 }} FCFA</p>
+
+            <div class="mt-4">
+                <a href="{% url 'facture_list' %}" class="btn btn-secondary">Retour</a>
+                <a href="{% url 'facture_update' facture.id %}" class="btn btn-warning">Modifier</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
