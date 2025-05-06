@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 
 {% block title %}
-            Créer une facture
+    Créer une facture
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5">
     <h1 class="mb-4 text-center">
-        
-            Créer une facture
-
+        Créer une facture
     </h1>
     <form method="post" id="factureForm">
         {% csrf_token %}
@@ -20,19 +18,23 @@
                 <h5 class="mb-0">Détails de la facture</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.client.id_for_label }}" class="form-label">Client</label>
-                        <div class="input-group">
-                            {{ form.client }}
-                            <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addClientModal">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                        </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.client.id_for_label }}" class="form-label">Client</label>
+                    <div class="input-group">
+                        {{ form.client }}
+                        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addClientModal">
+                            <i class="bi bi-plus"></i>
+                        </button>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-3 mb-3">
                         <label for="{{ form.type_facture.id_for_label }}" class="form-label">Type de facture</label>
                         {{ form.type_facture }}
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.type_objet.id_for_label }}" class="form-label">Objet de la facture</label>
+                        {{ form.objet }}
                     </div>
                     <div class="col-md-3 mb-3">
                         <label for="{{ form.statut.id_for_label }}" class="form-label">Statut</label>
@@ -91,14 +93,7 @@
                                     <label for="{{ form.prix_unitaire.id_for_label }}" class="form-label">Prix unitaire (FCFA)</label>
                                     {{ form.prix_unitaire }}
                                 </div>
-                                <div class="col-md-2 mb-3">
-                                    <label for="{{ form.remise_type.id_for_label }}" class="form-label">Type de remise</label>
-                                    {{ form.remise_type }}
-                                </div>
-                                <div class="col-md-2 mb-3 remise-valeur-field">
-                                    <label for="{{ form.remise_valeur.id_for_label }}" class="form-label">Valeur de remise</label>
-                                    {{ form.remise_valeur }}
-                                </div>
+                               
                                 <div class="col-md-1 mb-3 text-center">
                                     <label class="form-label d-block">Delete</label>
                                     {{ form.DELETE }}
@@ -139,16 +134,15 @@
                         </div>
                         <div class="mb-3">
                             <label for="clientTelephone" class="form-label">Telephone</label>
-                            <input type="text" class="form-control" id="clientNom" name="telephone" required>
+                            <input type="text" class="form-control" id="clientTelephone" name="telephone" required>
                         </div>
                         <div class="mb-3">
                             <label for="clientEmail" class="form-label">Email</label>
                             <input type="email" class="form-control" id="clientEmail" name="email">
                         </div>
-                        
                         <div class="mb-3">
                             <label for="clientAdresse" class="form-label">Adresse</label>
-                            <input type="text" class="form-control" id="clientNom" name="adresse">
+                            <input type="text" class="form-control" id="clientAdresse" name="adresse">
                         </div>
                         <button type="submit" class="btn btn-primary">Ajouter</button>
                     </form>
@@ -167,6 +161,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="addProduitForm">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label for="produitNom" class="form-label">Nom</label>
                             <input type="text" class="form-control" id="produitNom" name="nom" required>
@@ -178,14 +173,6 @@
                         <div class="mb-3">
                             <label for="produitDescription" class="form-label">Description</label>
                             <textarea class="form-control" id="produitDescription" name="description"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="produitRemiseType" class="form-label">Type de remise</label>
-                            <textarea class="form-control" id="produitRemiseType" name="remise_type"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="produitRemiseValeur" class="form-label">Valeur de remise</label>
-                            <textarea class="form-control" id="produitRemiseValeur" name="remise_valeur"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">Ajouter</button>
                     </form>
@@ -213,29 +200,16 @@
 .form-label {
     font-weight: 500;
 }
+.remise-valeur-field input[name$="remise_valeur"]::placeholder {
+    color: #6c757d;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Gestion de l'affichage des champs remise_valeur et remise_globale_valeur
     function toggleRemiseFields() {
-        document.querySelectorAll('.remise-valeur-field').forEach(function(field) {
-            const remiseTypeSelect = field.closest('.formset-row').querySelector('select[name$="remise_type"]');
-            const remiseValeurInput = field.querySelector('input[name$="remise_valeur"]');
-            if (remiseTypeSelect.value === 'aucune') {
-                field.style.display = 'none';
-                remiseValeurInput.value = '0';
-                remiseValeurInput.setAttribute('placeholder', '');
-            } else {
-                field.style.display = 'block';
-                if (remiseTypeSelect.value === 'pourcentage') {
-                    remiseValeurInput.setAttribute('placeholder', 'en %');
-                } else {
-                    remiseValeurInput.setAttribute('placeholder', 'en FCFA');
-                }
-            }
-        });
-
+        // Cette fonction est inutile ici car remise_type et remise_valeur sont commentés
         const remiseGlobaleType = document.querySelector('#id_remise_globale_type');
         const remiseGlobaleValeurField = document.querySelector('#remiseGlobaleValeurField');
         const remiseGlobaleValeurInput = remiseGlobaleValeurField.querySelector('input');
@@ -246,65 +220,12 @@ document.addEventListener('DOMContentLoaded', function() {
             remiseGlobaleValeurField.style.display = 'block';
         }
     }
+
     // Appel initial pour définir l'état des champs
     toggleRemiseFields();
 
-    // Écouteurs pour les changements de type de remise
-    document.querySelectorAll('select[name$="remise_type"]').forEach(function(select) {
-        select.addEventListener('change', toggleRemiseFields);
-    });
+    // Écouteur pour le changement de type de remise globale
     document.querySelector('#id_remise_globale_type').addEventListener('change', toggleRemiseFields);
-
-    // Ajouter une nouvelle ligne de facture
-    document.getElementById('addLigneBtn').addEventListener('click', function() {
-        const formsetContainer = document.getElementById('formset-container');
-        const totalForms = document.getElementById('id_form-TOTAL_FORMS');
-        const formCount = parseInt(totalForms.value);
-
-        // Cloner le dernier formset-row
-        const newRow = formsetContainer.lastElementChild.cloneNode(true);
-        newRow.querySelectorAll('input, select').forEach(function(input) {
-            const name = input.name.replace(/\d+/, formCount);
-            const id = input.id.replace(/\d+/, formCount);
-            input.name = name;
-            input.id = id;
-            if (input.type === 'select-one') {
-                if (input.name.endsWith('produit')) {
-                    input.value = '';
-                } else if (input.name.endsWith('remise_type')) {
-                    input.value = 'aucune';
-                }
-            } else if (input.type === 'number') {
-                input.value = input.name.endsWith('quantite') ? '1' : '0';
-            } else if (input.type !== 'checkbox') {
-                input.value = '';
-            } else {
-                input.checked = false;
-            }
-        });
-
-        formsetContainer.appendChild(newRow);
-        totalForms.value = formCount + 1;
-
-        // Réappliquer la logique de visibilité des remises
-        toggleRemiseFields();
-
-        // Ajouter des écouteurs aux nouveaux champs
-        newRow.querySelector('select[name$="remise_type"]').addEventListener('change', toggleRemiseFields);
-        newRow.querySelector('select[name$="produit"]').addEventListener('change', function() {
-            const row = this.closest('.formset-row');
-            const produitId = this.value;
-            if (produitId) {
-                fetch(`/produits/get_prix/${produitId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    row.querySelector('input[name$="prix_unitaire"]').value = data.prix_unitaire;
-                    updateTotalTTC();
-                });
-            }
-        });
-        updateTotalTTC();
-    });
 
     // Calculer le total TTC dynamiquement
     function updateTotalTTC() {
@@ -313,15 +234,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!row.querySelector('input[name$="DELETE"]').checked) {
                 const quantite = parseFloat(row.querySelector('input[name$="quantite"]').value) || 0;
                 const prixUnitaire = parseFloat(row.querySelector('input[name$="prix_unitaire"]').value) || 0;
-                const remiseType = row.querySelector('select[name$="remise_type"]').value;
-                const remiseValeur = parseFloat(row.querySelector('input[name$="remise_valeur"]').value) || 0;
 
                 let totalLigne = quantite * prixUnitaire;
-                if (remiseType === 'pourcentage') {
-                    totalLigne -= (totalLigne * remiseValeur) / 100;
-                } else if (remiseType === 'montant_fixe') {
-                    totalLigne -= remiseValeur;
-                }
+                // Ignorer remise_type et remise_valeur car ils sont commentés
                 sousTotal += totalLigne;
             }
         });
@@ -345,10 +260,108 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('totalTTC').textContent = totalTTC.toFixed(2);
     }
 
-    // Mettre à jour le total à chaque changement
+    // Ajouter une nouvelle ligne de facture
+    document.getElementById('addLigneBtn').addEventListener('click', function() {
+        const formsetContainer = document.getElementById('formset-container');
+        const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+        const formCount = parseInt(totalForms.value);
+
+        // Cloner le dernier formset-row
+        const newRow = formsetContainer.lastElementChild.cloneNode(true);
+        newRow.querySelectorAll('input, select').forEach(function(input) {
+            const name = input.name.replace(/\d+/, formCount);
+            const id = input.id.replace(/\d+/, formCount);
+            input.name = name;
+            input.id = id;
+            if (input.type === 'select-one') {
+                if (input.name.endsWith('produit')) {
+                    input.value = '';
+                }
+            } else if (input.type === 'number') {
+                input.value = input.name.endsWith('quantite') ? '1' : '0';
+            } else if (input.type !== 'checkbox') {
+                input.value = '';
+            } else {
+                input.checked = false;
+            }
+        });
+
+        formsetContainer.appendChild(newRow);
+        totalForms.value = formCount + 1;
+
+        // Ajouter des écouteurs aux nouveaux champs
+        newRow.querySelector('select[name$="produit"]').addEventListener('change', function() {
+            const row = this.closest('.formset-row');
+            const produitId = this.value;
+            if (produitId) {
+                console.log('Fetching price for product ID:', produitId); // Débogage
+                fetch(`/produits/get_prix/${produitId}/`)
+                .then(response => {
+                    console.log('Fetch response:', response); // Débogage
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Fetch data:', data); // Débogage
+                    if (data.prix_unitaire) {
+                        row.querySelector('input[name$="prix_unitaire"]').value = data.prix_unitaire;
+                        updateTotalTTC();
+                    } else {
+                        console.error('prix_unitaire not found in response:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération du prix :', error);
+                });
+            }
+        });
+
+        // Ajouter des écouteurs pour mettre à jour le total TTC lors des changements
+        newRow.querySelectorAll('input, select').forEach(function(input) {
+            input.addEventListener('change', updateTotalTTC);
+            input.addEventListener('input', updateTotalTTC);
+        });
+
+        updateTotalTTC();
+    });
+
+    // Mettre à jour le total à chaque changement pour les lignes existantes
     document.querySelectorAll('input, select').forEach(function(input) {
         input.addEventListener('change', updateTotalTTC);
         input.addEventListener('input', updateTotalTTC);
+    });
+
+    // Mettre à jour le prix unitaire lors de la sélection d'un produit pour les lignes existantes
+    document.querySelectorAll('select[name$="produit"]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            const row = this.closest('.formset-row');
+            const produitId = this.value;
+            if (produitId) {
+                console.log('Fetching price for product ID:', produitId); // Débogage
+                fetch(`/produits/get_prix/${produitId}/`)
+                .then(response => {
+                    console.log('Fetch response:', response); // Débogage
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Fetch data:', data); // Débogage
+                    if (data.prix_unitaire) {
+                        row.querySelector('input[name$="prix_unitaire"]').value = data.prix_unitaire;
+                        updateTotalTTC();
+                    } else {
+                        console.error('prix_unitaire not found in response:', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération du prix :', error);
+                });
+            }
+        });
     });
 
     // Ajouter un client via le modal
@@ -402,98 +415,64 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Mettre à jour le prix unitaire lors de la sélection d'un produit
-    document.querySelectorAll('select[name$="produit"]').forEach(function(select) {
-        select.addEventListener('change', function() {
-            const row = this.closest('.formset-row');
-            const produitId = this.value;
-            if (produitId) {
-                fetch(`/produits/get_prix/${produitId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.prix_unitaire) {
-                        row.querySelector('input[name$="prix_unitaire"]').value = data.prix_unitaire;
-                    }
-                    updateTotalTTC();
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la récupération du prix :', error);
-                });
-            }
-        });
-    });
-
     // Initialiser le total
     updateTotalTTC();
 
     // Gérer la soumission du formulaire
-    document.getElementById('factureForm').addEventListener('submit', function(e) {
-        // Vérifier les erreurs avant soumission
-        let hasErrors = false;
-        const form = this;
+    const factureForm = document.getElementById('factureForm');
+    if (factureForm) {
+        factureForm.addEventListener('submit', function(e) {
+            let hasErrors = false;
 
-        // Vérifier si un client est sélectionné
-        const clientSelect = document.getElementById('id_client');
-        if (!clientSelect.value) {
-            alert('Veuillez sélectionner un client.');
-            hasErrors = true;
-        }
+            // Vérifier si un client est sélectionné
+            const clientSelect = document.getElementById('id_client');
+            if (!clientSelect.value) {
+                console.log('Erreur : Aucun client sélectionné.');
+                alert('Veuillez sélectionner un client.');
+                hasErrors = true;
+            }
 
-        // Vérifier si au moins une ligne valide est présente
-        let hasValidLine = false;
-        document.querySelectorAll('.formset-row').forEach(function(row) {
-            if (!row.querySelector('input[name$="DELETE"]').checked) {
+            // Vérifier si au moins une ligne valide est présente
+            let hasValidLine = false;
+            document.querySelectorAll('.formset-row').forEach(function(row) {
+                const deleteCheckbox = row.querySelector('input[name$="DELETE"]');
                 const produit = row.querySelector('select[name$="produit"]').value;
-                const quantite = parseFloat(row.querySelector('input[name$="quantite"]').value) || 0;
-                if (produit && quantite > 0) {
-                    hasValidLine = true;
+                const quantiteInput = row.querySelector('input[name$="quantite"]');
+                const quantite = parseFloat(quantiteInput ? quantiteInput.value : 0) || 0;
+
+                if (!deleteCheckbox.checked) {
+                    if (produit && quantite > 0) {
+                        hasValidLine = true;
+                    } else {
+                        console.log('Ligne non valide :', {
+                            produit: produit,
+                            quantite: quantite,
+                            deleted: deleteCheckbox.checked
+                        });
+                    }
+                } else {
+                    console.log('Ligne marquée pour suppression, ignorée.');
                 }
+            });
+
+            if (!hasValidLine) {
+                console.log('Erreur : Aucune ligne de facture valide.');
+                alert('Veuillez ajouter ou conserver au moins une ligne de facture valide (produit et quantité > 0).');
+                hasErrors = true;
+            } else {
+                console.log('Au moins une ligne valide trouvée, soumission autorisée.');
+            }
+
+            if (hasErrors) {
+                e.preventDefault();
+                console.log('Soumission annulée en raison d\'erreurs.');
+            } else {
+                console.log('Soumission du formulaire autorisée.');
             }
         });
-
-        if (!hasValidLine) {
-            alert('Veuillez ajouter au moins une ligne de facture valide.');
-            hasErrors = true;
-        }
-
-        if (hasErrors) {
-            e.preventDefault();
-        }
-    });
+    }
 });
 </script>
-<!-- <style>
-    .formset-row {
-        background-color: #f8f9fa;
-        transition: all 0.3s ease;
-    }
-    .formset-row:hover {
-        background-color: #e9ecef;
-    }
-    #totalTTC {
-        font-weight: bold;
-        color: #198754;
-    }
-    .form-label {
-        font-weight: 500;
-    }
-    /* Style pour la case à cocher de suppression */
-    .formset-row .text-danger {
-        cursor: pointer;
-        font-size: 1.2rem;
-        transition: color 0.2s ease;
-    }
-    .formset-row .text-danger:hover {
-        color: #ff0000 !important; /* Rouge plus vif au survol */
-    }
-    .formset-row input[type="checkbox"] {
-        display: none; /* Masquer la case à cocher par défaut */
-    }
-    .formset-row input[type="checkbox"]:checked + .text-danger {
-        color: #dc3545; /* Rouge foncé quand coché */
-        transform: scale(1.2); /* Agrandir légèrement l'icône */
-    }
-    </style> -->
 
 <style>
 .formset-row {
@@ -516,4 +495,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </style>
 
 {% endblock %}
-

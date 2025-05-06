@@ -19,6 +19,8 @@ def produit_create(request):
             form.save()
             messages.success(request, 'Produit ajouté avec succès.')
             return redirect('produit_list')
+        else:
+            messages.error(request, f"Erreur lors de l'ajout de produit: {form.errors}")
     else:
         form = ProduitForm()
     return render(request, 'produits/produit_form.html', {'form': form})
@@ -47,6 +49,8 @@ def produit_update(request, produit_id):
             form.save()
             messages.success(request, 'Produit modifié avec succès.')
             return redirect('produit_list')
+        else:
+            messages.error(request, f"Erreur lors de la modification du produit : {form.errors}")
     else:
         form = ProduitForm(instance=produit)
     return render(request, 'produits/produit_form.html', {'form': form})

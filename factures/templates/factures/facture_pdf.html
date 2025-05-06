@@ -1,0 +1,209 @@
+{% load static format_number facture_tags %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if facture.type_facture == 'proforma' %}Proforma {% else %}Facture {% endif %}#{{ facture.id }}</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 10mm;
+            font-size: 12pt;
+        }
+        .container {
+            max-width: 210mm; /* A4 width */
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header-left {
+            /* font-weight: bold; */
+            font-size: 10pt;
+        }
+        .header-center {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .header-right {
+            text-align: right;
+            font-size: 10pt;
+        }
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .client-info, .object-info {
+            width: 100%;
+        }
+        .client-info p, .object-info p {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 10pt;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #007bff;
+            padding: 8px;
+            background: linear-gradient(135deg, #f0f7ff, #ffffff);
+        }
+        th {
+            background: linear-gradient(135deg, #d9e6ff, #e6f3ff); /* Dégradé pour les en-têtes */
+            font-weight: bold;
+            text-align: center;
+        }
+        td {
+            text-align: left;
+        }
+        .center {
+            text-align: center;
+        }
+        .text-end {
+            text-align: right;
+        }
+        .summary-table {
+            margin-top: 10px;
+        }
+        .summary-table th {
+            width: 70%;
+            text-align: right;
+            background-color: linear-gradient(135deg, #d9e6ff, #e6f3ff);
+        }
+        .summary-table td {
+            width: 30%;
+            text-align: right;
+        }
+        .amount-in-words {
+            text-align: left !important; /* Force l'alignement à gauche */
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .footer-note {
+            width: 60%;
+        }
+        .signature {
+            width: 35%;
+            text-align: left; /* Justifié à gauche */
+        }
+        .signature p:first-child {
+            margin-bottom: 40px; /* Ajoute un espace vertical entre les lignes */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <div class="header">
+            <div class="header-left">
+                N° {{ facture.numero }}
+            </div>
+            
+            <div class="header-right">
+                Lomé, le {{ facture.date|date:"d/m/Y" }}
+            </div>
+        </div>
+        <div class="header-center">
+            {% if facture.type_facture == 'proforma' %}Facture Proforma{% else %}Facture{% endif %}
+        </div>
+
+        <!-- Client et Objet -->
+        <div class="info-section">
+            <div class="client-info">
+                <p><strong>Client : </strong>{{ facture.client }}</p>
+                <p><strong>Objet : </strong>{{ facture.objet|default:"Non spécifié" }}</p>
+            </div>
+        </div>
+
+        <!-- Lignes de facture -->
+        <table>
+            <thead>
+                <tr>
+                    <th>N°</th>
+                    <th>Désignation</th>
+                    <th>Qté</th>
+                    <th>P.U (FCFA)</th>
+                    <th class="text-end">Montant (FCFA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in facture.lignefacture_set.all %}
+                    <tr>
+                        <td class="center">{{ forloop.counter }}</td>
+                        <td>{{ ligne.produit }}</td>
+                        <td class="center">{{ ligne.quantite }}</td>
+                        <td class="text-end">{{ ligne.prix_unitaire|format_number }}</td>
+                        <td class="text-end">{{ ligne.calculer_total|format_number }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Résumé -->
+        <table class="summary-table">
+            <tr>
+                <th>Sous-total :</th>
+                <td>{{ facture.sous_total|format_number }} FCFA</td>
+            </tr>
+            <tr>
+                <th>TVA ({{ facture.tva }}%) :</th>
+                <td>{{ facture.montant_tva|format_number }} FCFA</td>
+            </tr>
+
+            <tr>
+                <th>Livraison :</th>
+                <td>{% if facture.livraison == 0 or facture.livraison is None %} - {% else %}{{ facture.livraison|format_number }} FCFA{% endif %}</td>
+                <!-- <td>{{ facture.frais_livraison|format_number }} FCFA</td> -->
+            </tr>
+            <tr>
+                <th>Total TTC :</th>
+                <td>{{ facture.total_ttc|format_number }} FCFA</td>
+            </tr>
+        </table>
+        <p class="amount-in-words">
+            <span class="amount-in-words-inner">
+                {% if facture.type_facture == 'proforma' %}
+                    <strong>Arrêtée la présente facture proforma à la somme TTC de {{ facture.total_ttc|number_to_words }} ({{ facture.total_ttc|format_number }}) Francs CFA.</strong>
+                {% else %}
+                    <strong>Arrêtée la présente facture à la somme TTC de {{ facture.total_ttc|number_to_words }} ({{ facture.total_ttc|format_number }}) Francs CFA.</strong>
+                {% endif %}
+            </span>
+        </p>
+
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-note">
+                
+            </div>
+            <div class="signature">
+                <div class="signature-content">
+                    <p>Le Directeur,</p>
+                    <p>
+
+                    </p>
+                    <p>Maditoma TCHEDRE</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

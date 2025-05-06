@@ -29,4 +29,5 @@ urlpatterns = [
     path('factures/delete/<int:pk>/', facture_views.facture_delete, name='facture_delete'),
     path('factures/factures/<int:pk>/update/', facture_views.facture_update, name='facture_update'),
     path('factures/proformas/<int:pk>/convert/', facture_views.proforma_to_facture, name='proforma_to_facture'),
+    path('pdf/<int:pk>/', facture_views.FacturePDFView.as_view(), name='facture_pdf'),
 ]

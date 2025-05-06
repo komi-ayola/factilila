@@ -3,6 +3,7 @@
 {% block title %}Liste des produits{% endblock %}
 
 {% block content %}
+<div class="container mt-5 mb-3">
     <h1>Liste des produits</h1>
     <a href="{% url 'produit_create' %}" class="btn btn-primary mb-3">Ajouter un produit</a>
     <div class="card shadow-sm">
@@ -89,4 +90,6 @@
             {% endif %}
         </div>
     </div>
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary mb-3 mt-3">Retour à l'accueil</a>
+</div>
 {% endblock %}
