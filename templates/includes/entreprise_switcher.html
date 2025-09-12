@@ -1,0 +1,25 @@
+{% load entreprises_tags %}
+
+{% if user.is_authenticated %}
+  <form method="post" action="{% url 'entreprises:switch' %}" class="me-3 d-flex align-items-center">
+    {% csrf_token %}
+    <select name="entreprise_id" class="form-select form-select-sm" onchange="this.form.submit()">
+      {% if request.user.entreprise %}
+        {# Propriété directe (propriétaire) #}
+        <option value="{{ request.user.entreprise.id }}"
+                {% if request.entreprise and request.entreprise.id == request.user.entreprise.id %}selected{% endif %}>
+          {{ request.user.entreprise.nom_affichage|default:request.user.entreprise.nom }} (propriétaire)
+        </option>
+      {% endif %}
+
+      {# Entreprises où l’utilisateur est membre #}
+      {% for e in user.entreprises.all %}
+        <option value="{{ e.id }}"
+                {% if request.entreprise and request.entreprise.id == e.id %}selected{% endif %}>
+          {{ e.nom_affichage|default:e.nom }}
+        </option>
+      {% endfor %}
+    </select>
+    <input type="hidden" name="next" value="{{ request.path }}">
+  </form>
+{% endif %}

@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load formatting %}
+
+{% block title %}{{ facture.get_type_document_display }} {{ facture.numero|default:"—" }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">
+    {{ facture.get_type_document_display }} 
+    <span class="text-muted">#{{ facture.numero|default:"—" }}</span>
+  </h2>
+  <div class="btn-group">
+    <a class="btn btn-outline-secondary" href="{% url 'factures:liste' %}">← Retour</a>
+    <a class="btn btn-outline-dark" href="{% url 'factures:pdf' facture.pk %}" target="_blank">🖨️ PDF</a>
+    <a class="btn btn-primary" href="{% url 'factures:modifier' facture.pk %}">Modifier</a>
+    <a class="btn btn-outline-danger" href="{% url 'factures:supprimer' facture.pk %}">Supprimer</a>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-md-6">
+    <p><strong>Client :</strong> {{ facture.client.nom }}</p>
+    {% if facture.objet %}<p><strong>Objet :</strong> {{ facture.objet }}</p>{% endif %}
+    <p><strong>Date :</strong> {{ facture.date }}</p>
+    <p><strong>Statut :</strong> {{ facture.get_statut_display }}</p>
+  </div>
+  <div class="col-md-6">
+    <p><strong>TVA :</strong> {{ facture.tva|pct }}</p>
+    {% if facture.remise_globale_type != 'aucune' and facture.remise_globale_valeur %}
+      <p><strong>Remise globale :</strong> 
+        {% if facture.remise_globale_type == 'pourcentage' %}
+          {{ facture.remise_globale_valeur|pct }}
+        {% else %}
+          {{ facture.remise_globale_valeur|money:0 }}
+        {% endif %}
+      </p>
+    {% endif %}
+    {% if facture.frais_livraison and facture.frais_livraison|milliers:0 != "0" %}
+      <p><strong>Frais de livraison :</strong> {{ facture.frais_livraison|money:0 }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<table class="table table-sm table-striped align-middle">
+  <thead>
+    <tr>
+      <th class="text-center" style="width:50px;">#</th>
+      <th>Produit</th>
+      <th class="text-end" style="width: 100px;">Quantité</th>
+      <th class="text-end" style="width: 150px;">PU (HT)</th>
+      <th class="text-end" style="width: 150px;">Total ligne (HT)</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for l in facture.lignes.all %}
+      <tr>
+        <td class="text-center">{{ forloop.counter }}</td>
+        <td>
+          {{ l.produit.nom }}
+          {% if l.remise_type != 'aucune' and l.remise_valeur %}
+            <div class="small text-muted">
+              Remise :
+              {% if l.remise_type == 'pourcentage' %}
+                {{ l.remise_valeur|pct }}
+              {% else %}
+                {{ l.remise_valeur|money:0 }}
+              {% endif %}
+            </div>
+          {% endif %}
+        </td>
+        <td class="text-end">{{ l.quantite }}</td>
+        <td class="text-end">{{ l.prix_unitaire|money:2 }}</td>
+        <td class="text-end">
+          {{ l.montant_ht|money:2 }}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4" class="text-center text-muted">Aucune ligne</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="row justify-content-end">
+  <div class="col-md-6">
+    <table class="table table-borderless">
+      <tbody>
+        <tr>
+          <th class="text-end">Sous-total (HT) :</th>
+          <td class="text-end">{{ facture.sous_total|money:2 }}</td>
+        </tr>
+
+        {% if facture.remise_globale_type != 'aucune' and facture.remise_globale_valeur %}
+        <tr>
+          <th class="text-end">Remise globale :</th>
+          <td class="text-end">
+            - {{ facture.montant_remise_globale|money:2 }}
+          </td>
+        </tr>
+        {% endif %}
+
+        {% if facture.frais_livraison and facture.frais_livraison|milliers:0 != "0" %}
+        <tr>
+          <th class="text-end">Frais de livraison :</th>
+          <td class="text-end">{{ facture.frais_livraison|money:2 }}</td>
+        </tr>
+        {% endif %}
+
+        <tr>
+          <th class="text-end">Base HT :</th>
+          <td class="text-end">{{ facture.total_ht|money:2 }}</td>
+        </tr>
+        <tr>
+          <th class="text-end">TVA :</th>
+          <td class="text-end">{{ facture.total_tva|money:2 }}</td>
+        </tr>
+        <tr class="table-active">
+          <th class="text-end">Total TTC :</th>
+          <td class="text-end fw-bold">{{ facture.total_ttc|money:2 }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

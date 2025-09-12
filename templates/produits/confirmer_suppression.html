@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Supprimer {{ type_objet }}{% endblock %}
+{% block content %}
+<h4>Confirmer la suppression</h4>
+<p>Voulez-vous vraiment supprimer <strong>{{ objet }}</strong> ?</p>
+<form method="post">
+  {% csrf_token %}
+  <button class="btn btn-danger" type="submit">Oui, supprimer</button>
+  <a class="btn btn-outline-secondary" href="{% url 'produits:liste' %}">Annuler</a>
+</form>
+{% endblock %}

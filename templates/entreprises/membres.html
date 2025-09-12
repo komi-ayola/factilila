@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Membres de l'entreprise{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Membres — {{ entreprise.nom_affichage|default:entreprise.nom }}</h2>
+  <a href="{% url 'core:home' %}" class="btn btn-outline-secondary btn-sm">← Tableau de bord</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <strong>Liste des membres</strong>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Utilisateur</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in membres %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ m.user.username }}</td>
+                  <td>{{ m.user.email|default:"—" }}</td>
+                  <td style="max-width: 200px;">
+                    {% if m.user.id == entreprise.proprietaire_id %}
+                      <span class="badge bg-primary">Propriétaire</span>
+                    {% else %}
+                      <form method="post" action="{% url 'entreprises:changer_role_membre' m.id %}" class="d-inline-block">
+                        {% csrf_token %}
+                        <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+                          {% for val,label in m.ROLES %}
+                            <option value="{{ val }}" {% if m.role == val %}selected{% endif %}>{{ label }}</option>
+                          {% endfor %}
+                        </select>
+                      </form>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    {% if m.user.id != entreprise.proprietaire_id %}
+                      <form method="post" action="{% url 'entreprises:supprimer_membre' m.id %}" class="d-inline-block" onsubmit="return confirm('Retirer ce membre ?');">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-danger">Retirer</button>
+                      </form>
+                    {% else %}
+                      <span class="text-muted small">—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-3">Aucun membre pour l’instant.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <strong>Ajouter un membre</strong>
+      </div>
+      <div class="card-body">
+        <form method="post" action="{% url 'entreprises:ajouter_membre' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">{{ form_add.user_identifier.label }}</label>
+            {{ form_add.user_identifier }}
+            {% for e in form_add.user_identifier.errors %}
+              <div class="text-danger small">{{ e }}</div>
+            {% endfor %}
+            <div class="form-text">Saisis un <em>username</em> OU une <em>adresse email</em> d’un utilisateur existant.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ form_add.role.label }}</label>
+            {{ form_add.role }}
+          </div>
+          <button class="btn btn-success">Ajouter</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-3">
+      <div class="fw-bold">Rôles</div>
+      <ul class="mb-0">
+        <li><strong>Administrateur :</strong> gestion des membres + écriture</li>
+        <li><strong>Utilisateur :</strong> écriture (clients, produits, factures)</li>
+        <li><strong>Lecture :</strong> consultation uniquement</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Changer le rôle{% endblock %}
+{% block content %}
+<div class="col-lg-6">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <strong>Changer le rôle — {{ membre.user.username }}</strong>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          {{ form.role.label_tag }} {{ form.role }}
+        </div>
+        <div class="form-check mb-3">
+          {{ form.is_active }} <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Actif</label>
+        </div>
+        <button class="btn btn-primary">Enregistrer</button>
+        <a href="{% url 'entreprises:gestion_membres' %}" class="btn btn-outline-secondary">Retour</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

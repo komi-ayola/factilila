@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ produit.nom }}{% endblock %}
+{% block content %}
+<h3>{{ produit.nom }}</h3>
+<ul class="list-unstyled">
+  <li><strong>Prix unitaire :</strong> {{ produit.prix_unitaire }}</li>
+  <li><strong>TVA (%) :</strong> {{ produit.tva|default:"0" }}</li>
+  <li><strong>Type remise :</strong> {{ produit.type_remise|default:"aucune" }}</li>
+  <li><strong>Valeur remise :</strong> {{ produit.valeur_remise|default:"0" }}</li>
+</ul>
+<a class="btn btn-outline-secondary" href="{% url 'produits:modifier' produit.pk %}">Modifier</a>
+<a class="btn btn-outline-danger" href="{% url 'produits:supprimer' produit.pk %}">Supprimer</a>
+<a class="btn btn-link" href="{% url 'produits:liste' %}">← Retour</a>
+{% endblock %}

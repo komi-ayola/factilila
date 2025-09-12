@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load formatting %}
+{% block title %}Proformas{% endblock %}
+
+{% block content %}
+<style>
+  /* Actions ultra compactes, toujours sur une ligne */
+  .actions-cell{ width:1%; white-space:nowrap; }
+  .actions-inline{ display:inline-flex; flex-wrap:nowrap; align-items:center; gap:.25rem; }
+  .actions-cell form{ display:inline-flex; margin:0; } /* les <form> restent inline */
+  .actions-inline .btn{ padding:.15rem .4rem; }       /* boutons compacts */
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">📄 Proformas</h2>
+  <div class="btn-group">
+    <a class="btn btn-outline-secondary" href="{% url 'factures:liste' %}">Voir les factures</a>
+    <a href="{% url 'factures:ajouter' %}" class="btn btn-primary btn-sm">➕ Nouvelle proforma / facture</a>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Numéro</th>
+            <th>Date</th>
+            <th>Client</th>
+            <!-- <th>Objet</th> -->
+            <th class="text-end">Total TTC</th>
+            <th>État</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in proformas %}
+            <tr>
+              <td>
+                {# Compteur global paginé : start_index() + offset #}
+                {{ forloop.counter0|add:proformas.start_index }}
+              </td>
+              <td><a href="{% url 'factures:detail' p.pk %}">{{ p.numero|default:"—" }}</a></td>
+              <td>{{ p.date }}</td>
+              <td>{{ p.client.nom }}</td>
+              <!-- <td>{{ p.objet|default:"—" }}</td> -->
+              <td class="text-end">{{ p.total_ttc|money:0 }}</td>
+
+              <td>
+                {% if p.facture_cible_id or p.deja_convertie or p.statut == 'convertie' %}
+                  <span class="badge bg-success">Convertie</span>
+                {% else %}
+                  <span class="badge bg-secondary">Proforma</span>
+                {% endif %}
+              </td>
+
+              <td class="text-end actions-cell">
+                <div class="actions-inline">
+                  <a class="btn btn-sm btn-outline-dark" href="{% url 'factures:pdf' p.pk %}" target="_blank" title="Télécharger PDF">PDF</a>
+
+                  {% if p.facture_cible_id %}
+                    <a href="{% url 'factures:detail' p.facture_cible_id %}" class="btn btn-sm btn-outline-primary" title="Voir la facture">Voir</a>
+
+                    <form method="post" action="{% url 'factures:supprimer' p.pk %}"
+                          onsubmit="return confirm('Supprimer cette proforma ?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">Suppr</button>
+                    </form>
+
+                  {% else %}
+                    <form method="post" action="{% url 'factures:convertir' p.pk %}"
+                          onsubmit="return confirm('Convertir cette proforma en facture ?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-warning" title="Convertir en facture">Convertir</button>
+                    </form>
+
+                    <a href="{% url 'factures:modifier' p.pk %}" class="btn btn-sm btn-outline-secondary" title="Modifier la proforma">Modif</a>
+
+                    <form method="post" action="{% url 'factures:supprimer' p.pk %}"
+                          onsubmit="return confirm('Supprimer cette proforma ?');">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">Suppr</button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center text-muted p-4">Aucune proforma</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% include "includes/pagination.html" with page_obj=proformas %}
+{% endblock %}

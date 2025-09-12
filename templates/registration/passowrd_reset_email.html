@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr">
+  <body>
+    <p>Bonjour,</p>
+    <p>Un compte a été créé pour vous dans l'application <strong>FactiLila</strong>.</p>
+    <p>Pour définir votre mot de passe, cliquez sur le lien ci-dessous :</p>
+    <p><a href="{{ protocol }}://{{ domain }}{% url 'password_reset_confirm' uidb64=uid token=token %}">
+      Définir mon mot de passe
+    </a></p>
+    <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.</p>
+    <p>— L'équipe FactiLila</p>
+  </body>
+</html>

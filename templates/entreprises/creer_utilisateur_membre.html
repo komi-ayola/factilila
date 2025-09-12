@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Créer un utilisateur{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Créer un utilisateur</strong>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'entreprises:gestion_membres' %}">← Retour aux membres</a>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label">Nom d’utilisateur</label>
+            {{ form.username }}
+            {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Rôle</label>
+            {{ form.role }}
+            {% if form.role.errors %}<div class="text-danger small">{{ form.role.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="form-check mb-3">
+            {{ form.send_email }} <label class="form-check-label">Envoyer un e-mail avec le mot de passe temporaire</label>
+          </div>
+
+          <button class="btn btn-primary w-100" type="submit">Créer et ajouter</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

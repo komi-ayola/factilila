@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Modifier {{ facture.numero|default:"Document" }}{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">✏️ Modifier {{ facture.get_type_document_display }} {{ facture.numero|default:"—" }}</h2>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {% if facture_form.non_field_errors %}
+    <div class="alert alert-danger">
+      {{ facture_form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <!-- Infos globales -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white fw-bold">Informations</div>
+    <div class="card-body row g-3">
+      <div class="col-md-3">
+        {{ facture_form.type_document.label_tag }} {{ facture_form.type_document }}
+        {% for e in facture_form.type_document.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-3">
+        {{ facture_form.client.label_tag }} {{ facture_form.client }}
+        {% for e in facture_form.client.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-2">
+        {{ facture_form.statut.label_tag }} {{ facture_form.statut }}
+        {% for e in facture_form.statut.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        {{ facture_form.objet.label_tag }} {{ facture_form.objet }}
+        {% for e in facture_form.objet.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="col-md-2">
+        {{ facture_form.tva.label_tag }} {{ facture_form.tva }}
+        {% for e in facture_form.tva.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-3">
+        {{ facture_form.remise_globale_type.label_tag }} {{ facture_form.remise_globale_type }}
+        {% for e in facture_form.remise_globale_type.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-3">
+        {{ facture_form.remise_globale_valeur.label_tag }} {{ facture_form.remise_globale_valeur }}
+        {% for e in facture_form.remise_globale_valeur.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-4">
+        {{ facture_form.frais_livraison.label_tag }} {{ facture_form.frais_livraison }}
+        {% for e in facture_form.frais_livraison.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Lignes -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-secondary text-white fw-bold d-flex justify-content-between align-items-center">
+      <span>Lignes</span>
+      <button type="button" class="btn btn-light btn-sm" id="add-line">➕ Ajouter une ligne</button>
+    </div>
+
+    <div class="card-body" id="ligne-container">
+      {{ formset.management_form }}
+
+      {% if formset.non_form_errors %}
+        <div class="alert alert-danger">
+          {{ formset.non_form_errors }}
+        </div>
+      {% endif %}
+
+      <div class="row fw-bold text-muted mb-2">
+        <div class="col-md-3">Produit</div>
+        <div class="col-md-1">Qté</div>
+        <div class="col-md-2">PU</div>
+        <div class="col-md-2">Type remise</div>
+        <div class="col-md-2">Valeur remise</div>
+        <div class="col-md-1">Montant</div>
+        <div class="col-md-1 text-end">Suppr.</div>
+      </div>
+
+      {% for form in formset %}
+        <div class="ligne-form row g-2 align-items-end mb-2">
+          {# IMPORTANT : id caché pour les lignes existantes #}
+          <span class="d-none">{{ form.id }}</span>
+
+          <div class="col-md-3">
+            {{ form.produit }}
+            {% for e in form.produit.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-1">
+            {{ form.quantite }}
+            {% for e in form.quantite.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-2">
+            {{ form.prix_unitaire }}
+            {% for e in form.prix_unitaire.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-2">
+            {{ form.remise_type }}
+            {% for e in form.remise_type.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-2">
+            {{ form.remise_valeur }}
+            {% for e in form.remise_valeur.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="col-md-1">
+            <input type="text" class="form-control montant text-end" value="0,00" readonly>
+          </div>
+          <div class="col-md-1 text-end">
+            {% if form.DELETE %}
+              <span class="d-none delete-checkbox">{{ form.DELETE }}</span>
+            {% endif %}
+            <button type="button" class="btn btn-outline-danger btn-sm remove-line">🗑️</button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Totaux -->
+    <div class="border-top pt-3">
+      <div class="row mb-2">
+        <div class="col-md-8"></div>
+        <div class="col-md-2 text-end"><strong>Sous-total :</strong></div>
+        <div class="col-md-2 text-end"><span id="sous-total">0,00</span> FCFA</div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-8"></div>
+        <div class="col-md-2 text-end"><strong>Remise globale :</strong></div>
+        <div class="col-md-2 text-end"><span id="remise-globale">0,00</span> FCFA</div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-8"></div>
+        <div class="col-md-2 text-end"><strong>Frais :</strong></div>
+        <div class="col-md-2 text-end"><span id="frais">0,00</span> FCFA</div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-8"></div>
+        <div class="col-md-2 text-end"><strong>Total HT :</strong></div>
+        <div class="col-md-2 text-end"><span id="total-ht">0,00</span> FCFA</div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-8"></div>
+        <div class="col-md-2 text-end"><strong>TVA :</strong></div>
+        <div class="col-md-2 text-end"><span id="montant-tva">0,00</span> FCFA</div>
+      </div>
+      <div class="row">
+        <div class="col-md-8"></div>
+        <div class="col-md-2 text-end"><strong>Total TTC :</strong></div>
+        <div class="col-md-2 text-end"><span id="total-ttc" class="fw-bold">0,00</span> FCFA</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <a href="{% url 'factures:detail' facture.pk %}" class="btn btn-outline-secondary">← Retour</a>
+    <button type="submit" class="btn btn-success">💾 Enregistrer</button>
+  </div>
+</form>
+
+<!-- PRIX JSON -->
+<script id="prix-json" type="application/json">{{ prix_json|safe }}</script>
+
+{% block scripts %}
+<script>
+  const PRIX_PRODUITS = JSON.parse(document.getElementById('prix-json').textContent);
+  const nf = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  function toNum(v){
+    if (v === null || v === undefined) return 0;
+    const s = String(v).replace(/\s/g,'').replace(',', '.');
+    const x = parseFloat(s);
+    return isNaN(x) ? 0 : x;
+  }
+
+  function calcLigne(ligne){
+    const q  = toNum(ligne.querySelector('.quantite-input')?.value || 0);
+    const pu = toNum(ligne.querySelector('.prix-input')?.value || 0);
+    const t  = ligne.querySelector('.remise-type')?.value || 'aucune';
+    const rv = toNum(ligne.querySelector('.remise-valeur')?.value || 0);
+
+    let brut = q * pu;
+    let rem  = 0;
+    if (t === 'pourcentage') rem = brut * (rv/100.0);
+    else if (t === 'montant') rem = Math.min(rv, brut);
+
+    const net = Math.max(brut - rem, 0);
+    const out = ligne.querySelector('.montant');
+    if (out) out.value = nf.format(net);
+    return net;
+  }
+
+  function recalculer(){
+    let sousTotal = 0;
+
+    document.querySelectorAll('.ligne-form').forEach(ligne => {
+      const del = ligne.querySelector('.delete-checkbox input[type="checkbox"]');
+      if (del && del.checked) {
+        ligne.style.display = 'none';
+        return;
+      } else {
+        ligne.style.display = '';
+      }
+      sousTotal += calcLigne(ligne);
+    });
+
+    // Global
+    const tvaInput   = document.querySelector('[name="tva"]');
+    const rtypeInput = document.querySelector('[name="remise_globale_type"]');
+    const rvalInput  = document.querySelector('[name="remise_globale_valeur"]');
+    const fraisInput = document.querySelector('[name="frais_livraison"]');
+
+    const tva   = toNum(tvaInput?.value || 18);
+    const rtype = rtypeInput?.value || 'aucune';
+    const rval  = toNum(rvalInput?.value || 0);
+    const frais = toNum(fraisInput?.value || 0);
+
+    let remiseGlobale = 0;
+    if (rtype === 'pourcentage') remiseGlobale = sousTotal * (rval/100.0);
+    else if (rtype === 'montant') remiseGlobale = Math.min(rval, sousTotal);
+
+    const totalHT = Math.max(sousTotal - remiseGlobale + frais, 0);
+    const montantTVA = totalHT * (tva/100.0);
+    const totalTTC = totalHT + montantTVA;
+
+    document.getElementById('sous-total').textContent = nf.format(sousTotal);
+    document.getElementById('remise-globale').textContent = nf.format(remiseGlobale);
+    document.getElementById('frais').textContent = nf.format(frais);
+    document.getElementById('total-ht').textContent = nf.format(totalHT);
+    document.getElementById('montant-tva').textContent = nf.format(montantTVA);
+    document.getElementById('total-ttc').textContent = nf.format(totalTTC);
+  }
+
+  // Auto PU
+  document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('produit-select')) {
+      const id = e.target.value;
+      const prix = PRIX_PRODUITS[id];
+      const ligne = e.target.closest('.ligne-form');
+      const pu = ligne?.querySelector('.prix-input');
+      if (pu && typeof prix !== 'undefined') {
+        pu.value = parseFloat(prix).toFixed(2);
+        recalculer();
+      }
+    }
+  });
+
+  // Recalcul immédiat
+  document.addEventListener('input', (e) => {
+    if (
+      e.target.classList.contains('quantite-input') ||
+      e.target.classList.contains('prix-input') ||
+      e.target.classList.contains('remise-valeur')
+    ) {
+      recalculer();
+    }
+  });
+
+  // Changement remise globale, tva, frais
+  document.addEventListener('change', (e) => {
+    const names = ['tva', 'remise_globale_type', 'remise_globale_valeur', 'frais_livraison', 'remise_type'];
+    if (names.includes(e.target.name) || e.target.classList.contains('remise-type')) {
+      recalculer();
+    }
+  });
+
+  // Ajout de ligne (inline formset) : on DOIT réindexer et VIDER le champ caché id
+  document.getElementById('add-line').addEventListener('click', function () {
+    const container = document.getElementById('ligne-container');
+    const totalFormsInput = container.querySelector('[name$="-TOTAL_FORMS"]');
+    const currentCount = parseInt(totalFormsInput.value, 10);
+    const first = container.querySelector('.ligne-form');
+    if (!first) return;
+    const clone = first.cloneNode(true);
+
+    // réindexation
+    clone.querySelectorAll('input, select, textarea, label').forEach(el => {
+      if (el.tagName === 'LABEL' && el.getAttribute('for')) {
+        el.setAttribute('for', el.getAttribute('for').replace(/-\d+-/, `-${currentCount}-`));
+      }
+      if (el.name) el.name = el.name.replace(/-\d+-/, `-${currentCount}-`);
+      if (el.id)   el.id   = el.id.replace(/-\d+-/,   `-${currentCount}-`);
+    });
+
+    // reset valeurs
+    const idHidden = clone.querySelector('input[name$="-id"]'); if (idHidden) idHidden.value = '';
+    const sp = clone.querySelector('.produit-select');    if (sp) sp.selectedIndex = 0;
+    const q  = clone.querySelector('.quantite-input');    if (q) q.value = '';
+    const p  = clone.querySelector('.prix-input');        if (p) p.value = '';
+    const rt = clone.querySelector('.remise-type');       if (rt) rt.value = 'aucune';
+    const rv = clone.querySelector('.remise-valeur');     if (rv) rv.value = '';
+    const m  = clone.querySelector('.montant');           if (m) m.value = '0,00';
+
+    const del = clone.querySelector('.delete-checkbox input[type="checkbox"]');
+    if (del) del.checked = false;
+
+    container.appendChild(clone);
+    totalFormsInput.value = currentCount + 1;
+    recalculer();
+  });
+
+  // Supprimer (marquer DELETE)
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-line')) {
+      const ligne = e.target.closest('.ligne-form');
+      const del = ligne.querySelector('.delete-checkbox input[type="checkbox"]');
+      if (del) {
+        del.checked = true;
+        ligne.style.display = 'none';
+      } else {
+        ligne.remove();
+      }
+      recalculer();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', recalculer);
+</script>
+{% endblock %}
+{% endblock %}

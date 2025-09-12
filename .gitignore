@@ -1,0 +1,44 @@
+# ---- Python / Django ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+*.log
+
+# Virtualenv
+env/
+venv/
+ENV/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Django
+/staticfiles/
+staticfiles/
+collectstatic/
+media/
+*.sqlite3
+db.sqlite3
+
+# Environment / secrets
+.env
+.env.local
+.env.dev
+.env.prod
+*.bak
+
+# Tests / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# PDF / exports temporaires
+*.pdf
+*.xlsx
+*.xls
+*.csv

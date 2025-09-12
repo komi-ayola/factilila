@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ titre|default:"Produit" }}{% endblock %}
+{% block content %}
+<h2 class="mb-3">{{ titre|default:"Nouveau produit" }}</h2>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  <div class="mb-3">
+    <label for="{{ form.nom.id_for_label }}" class="form-label">{{ form.nom.label }}</label>
+    {{ form.nom }}
+  </div>
+
+  <div class="mb-3">
+    <label for="{{ form.prix_unitaire.id_for_label }}" class="form-label">{{ form.prix_unitaire.label }}</label>
+    {{ form.prix_unitaire }}
+  </div>
+
+  <div class="mb-3">
+    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+    {{ form.description }}
+  </div>
+
+  <div class="mb-3" id="bloc_valeur_remise">
+    <label for="{{ form.valeur_remise.id_for_label }}" class="form-label">{{ form.valeur_remise.label }}</label>
+    {{ form.valeur_remise }}
+    
+  </div> 
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'produits:liste' %}" class="btn btn-outline-secondary">← Retour</a>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+  </div>
+</form>
+
+<script>
+(function () {
+  const typeSelect = document.getElementById('id_type_remise');
+  const blocValeur = document.getElementById('bloc_valeur_remise');
+
+  function toggleValeur() {
+    const v = typeSelect.value;
+    blocValeur.style.display = (v === 'aucune') ? 'none' : 'block';
+  }
+
+  if (typeSelect) {
+    toggleValeur();
+    typeSelect.addEventListener('change', toggleValeur);
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load formatting %}
+{% block title %}Factures{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">📄 Factures</h2>
+  <div class="btn-group">
+    <a class="btn btn-outline-secondary" href="{% url 'factures:liste_proformas' %}">Voir les proformas</a>
+    <a class="btn btn-primary" href="{% url 'factures:ajouter' %}">➕ Nouvelle facture / proforma</a>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>N°</th>
+            <th>Client</th>
+            <th>Date</th>
+            <th class="text-end">Total TTC</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in factures %}
+            <tr>
+              <td>{{ forloop.counter0|add:factures.start_index|default:forloop.counter }}</td>
+              <td><a href="{% url 'factures:detail' f.pk %}">{{ f.numero|default:"—" }}</a></td>
+              <td>{{ f.client.nom }}</td>
+              <td>{{ f.date }}</td>
+              <td class="text-end">{{ f.total_ttc|money:0 }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'factures:modifier' f.pk %}">Modifier</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'factures:supprimer' f.pk %}">Supprimer</a>
+                <a class="btn btn-sm btn-outline-dark" href="{% url 'factures:pdf' f.pk %}" target="_blank">PDF</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted p-4">Aucune facture</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{# pagination (on passe le page object) #}
+{% include "includes/pagination.html" with page_obj=factures %}
+{% endblock %}

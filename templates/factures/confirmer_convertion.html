@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Convertir en facture{% endblock %}
+
+{% block content %}
+<h2>Convertir la proforma en facture</h2>
+
+<div class="alert alert-warning">
+  Voulez-vous vraiment convertir la proforma
+  <strong>{{ facture.numero|default:"(sans numéro)" }}</strong>
+  pour <strong>{{ facture.client.nom }}</strong> en facture ?
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <a href="{% url 'factures:liste_proformas' %}" class="btn btn-outline-secondary">Annuler</a>
+  <button type="submit" class="btn btn-success">✅ Convertir</button>
+</form>
+{% endblock %}

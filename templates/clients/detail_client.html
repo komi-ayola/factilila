@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ client.nom }}{% endblock %}
+{% block content %}
+<h3>{{ client.nom }}</h3>
+<ul class="list-unstyled">
+  <li><strong>Email :</strong> {{ client.email }}</li>
+  <li><strong>Téléphone :</strong> {{ client.telephone }}</li>
+  <li><strong>Adresse :</strong><br>{{ client.adresse|linebreaks }}</li>
+</ul>
+<a class="btn btn-outline-secondary" href="{% url 'clients:modifier' client.pk %}">Modifier</a>
+<a class="btn btn-outline-danger" href="{% url 'clients:supprimer' client.pk %}">Supprimer</a>
+<a class="btn btn-link" href="{% url 'clients:liste' %}">← Retour</a>
+{% endblock %}

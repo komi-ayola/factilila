@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Créer un compte{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-primary text-white text-center">
+        <h4 class="mb-0">Créer un compte & votre entreprise</h4>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <h5 class="text-muted mb-3">👤 Informations utilisateur</h5>
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.username.label_tag }} {{ form.username }}</div>
+            <div class="col-md-6">{{ form.email.label_tag }} {{ form.email }}</div>
+            <div class="col-md-6">{{ form.password1.label_tag }} {{ form.password1 }}</div>
+            <div class="col-md-6">{{ form.password2.label_tag }} {{ form.password2 }}</div>
+          </div>
+
+          <hr>
+
+          <h5 class="text-muted mb-3">🏢 Informations entreprise</h5>
+          <div class="row g-3">
+            <div class="col-md-6">{{ entreprise_form.nom.label_tag }} {{ entreprise_form.nom }}</div>
+            <div class="col-md-6">{{ entreprise_form.nom_affichage.label_tag }} {{ entreprise_form.nom_affichage }}</div>
+            <div class="col-md-4">{{ entreprise_form.ville.label_tag }} {{ entreprise_form.ville }}</div>
+            <div class="col-md-4">{{ entreprise_form.pays.label_tag }} {{ entreprise_form.pays }}</div>
+            <div class="col-md-4">{{ entreprise_form.telephone.label_tag }} {{ entreprise_form.telephone }}</div>
+            <div class="col-md-6">{{ entreprise_form.email.label_tag }} {{ entreprise_form.email }}</div>
+            <div class="col-md-6">{{ entreprise_form.logo.label_tag }} {{ entreprise_form.logo }}</div>
+            <div class="col-12">{{ entreprise_form.adresse.label_tag }} {{ entreprise_form.adresse }}</div>
+            <div class="col-12">{{ entreprise_form.nom_signataire.label_tag }} {{ entreprise_form.nom_signataire }}</div>
+          </div>
+
+          <div class="mt-4 text-center">
+            <button type="submit" class="btn btn-success px-4">✅ Créer mon compte</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

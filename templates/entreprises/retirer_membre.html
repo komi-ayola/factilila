@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Retirer un membre{% endblock %}
+{% block content %}
+<div class="col-lg-6">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <strong>Retirer le membre</strong>
+    </div>
+    <div class="card-body">
+      <p>Voulez-vous vraiment retirer <strong>{{ membre.user.username }}</strong> de l’entreprise <strong>{{ entreprise.nom_affichage|default:entreprise.nom }}</strong> ?</p>
+      <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger">Oui, retirer</button>
+        <a href="{% url 'entreprises:gestion_membres' %}" class="btn btn-outline-secondary">Annuler</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

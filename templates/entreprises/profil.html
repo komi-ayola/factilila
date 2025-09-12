@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Profil entreprise{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Profil de l’entreprise</h2>
+      <a href="{% url 'core:home' %}" class="btn btn-outline-secondary">← Tableau de bord</a>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        {% if entreprise %}
+          <div class="mb-3">
+            <div class="small text-muted">Entreprise liée à votre compte :</div>
+            <div class="fs-5 fw-bold">{{ entreprise.nom|default:"entreprise.nom_affichage" }}</div>
+            {% if entreprise.logo %}
+              <div class="mt-2">
+                <img src="{{ entreprise.logo.url }}" alt="Logo" style="max-height:80px;">
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nom légal</label>
+              {{ form.nom }}
+              {% for e in form.nom.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nom d’affichage (sur facture)</label>
+              {{ form.nom_affichage }}
+              {% for e in form.nom_affichage.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Ville</label>
+              {{ form.ville }}
+              {% for e in form.ville.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Pays</label>
+              {{ form.pays }}
+              {% for e in form.pays.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Téléphone</label>
+              {{ form.telephone }}
+              {% for e in form.telephone.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Adresse</label>
+              {{ form.adresse }}
+              {% for e in form.adresse.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+              {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Nom du signataire (Directeur)</label>
+              {{ form.nom_signataire }}
+              {% for e in form.nom_signataire.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Logo</label>
+              {{ form.logo }}
+              {% for e in form.logo.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+              <div class="form-text">PNG/JPG. Sera utilisé dans les PDF.</div>
+            </div>
+          </div>
+
+          <div class="mt-4 d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+              Ces informations seront utilisées dans toute l’application (PDF facture/proforma, entêtes, etc.).
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

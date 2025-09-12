@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Ajouter un membre{% endblock %}
+{% block content %}
+<div class="col-lg-6">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <strong>Ajouter un membre</strong>
+    </div>
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          {{ form.user_identifier.label_tag }} 
+          {{ form.user_identifier }}
+          {% for e in form.user_identifier.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+        <div class="mb-3">
+          {{ form.role.label_tag }} 
+          {{ form.role }}
+          {% for e in form.role.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        </div>
+        <button class="btn btn-primary">Ajouter</button>
+        <a href="{% url 'entreprises:gestion_membres' %}" class="btn btn-outline-secondary">Annuler</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

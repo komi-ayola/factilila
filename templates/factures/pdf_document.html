@@ -1,0 +1,202 @@
+{% load static %}
+{% load formatting %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>{{ doc.get_type_document_display }} {{ doc.numero|default:"—" }}</title>
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 14px; color: #222; }
+    h1, h2, h3 { margin: 0 0 6px 0; }
+    .header, .footer { width: 100%; }
+    .footer { margin-top: 12px; font-size: 11px; color: #666; }
+
+    .box { border: 1px solid #ddd; padding: 8px; border-radius: 4px; }
+    .muted { color: #666; }
+
+    .title { font-size: 20px; font-weight: 700; }
+    .proforma { color: #b45f06; }
+    .facture  { color: #0b5394; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #ddd; padding: 6px; }
+    th { background: #f8f9fa; text-align: left; }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .badge { padding: 2px 6px; border-radius: 3px; font-size: 11px; }
+    .badge-proforma { background: #fde3cf; color: #b45f06; border: 1px solid #f3c5a8; }
+    .badge-facture  { background: #d7e9ff; color: #0b5394; border: 1px solid #a1c5f7; }
+
+    .totaux { margin-top: 10px; width: 40%; margin-left: auto; }
+    .totaux table { width: 100%; }
+    .totaux td { padding: 6px; }
+    .totaux .label { width: 60%; }
+    .totaux .value { width: 40%; text-align: right; }
+
+    .watermark {
+      position: fixed; top: 40%; left: 10%; opacity: 0.08; font-size: 120px; transform: rotate(-20deg);
+    }
+  </style>
+</head>
+<body>
+
+  {% if is_proforma %}
+    <div class="watermark">PROFORMA</div>
+  {% else %}
+    <div class="watermark">FACTURE</div>
+  {% endif %}
+
+  <div class="header" style="margin-bottom:20px;">
+  <table role="presentation" style="width:100%; border-collapse:collapse; table-layout:fixed; border:0;">
+    <tr>
+      {% if logo_path %}
+      <!-- Col. 1 : Logo -->
+      <td style="width:160px; vertical-align:top; border:0; padding:0;">
+        <!-- <img src="{{ logo_path }}" alt="Logo" style="max-height:64px; max-width:160px; display:block;"> -->
+        <img src="{{ logo_path }}" alt="Logo" style="height:64px; display:block;">
+      </td>
+
+      <!-- Col. 2 : Entreprise (quand logo présent → petit espace à gauche) -->
+      <td style="vertical-align:top; border:0; padding:0;">
+        <div style="font-weight:700;">{{ entreprise.nom|default:"" }}</div>
+        {% if entreprise.ville or entreprise.pays %}
+          {{ entreprise.ville|default_if_none:"" }}{% if entreprise.ville and entreprise.pays %}, {% endif %}{{ entreprise.pays|default:"Togo" }}<br>
+        {% endif %}
+        {% if entreprise.telephone %}Tél&nbsp;: {{ entreprise.telephone }}<br>{% endif %}
+        {% if entreprise.email %}Email&nbsp;: {{ entreprise.email }}{% endif %}
+      </td>
+      {% else %}
+      <!-- Col. 1 (pas de logo) : Entreprise directement collée au bord -->
+      <td style="vertical-align:top; border:0; padding:0;">
+        <div style="font-weight:700;">{{ entreprise.nom|default:"" }}</div>
+        {% if entreprise.ville or entreprise.pays %}
+          {{ entreprise.ville|default_if_none:"" }}{% if entreprise.ville and entreprise.pays %}, {% endif %}{{ entreprise.pays|default:"Togo" }}<br>
+        {% endif %}
+        {% if entreprise.telephone %}Tél&nbsp;: {{ entreprise.telephone }}<br>{% endif %}
+        {% if entreprise.email %}Email&nbsp;: {{ entreprise.email }}{% endif %}
+      </td>
+      {% endif %}
+
+      <!-- Col. Doc : Type + N° + Date -->
+      <td style="width:230px; vertical-align:top; text-align:right; border:0; padding:0;">
+        <div style="font-size:20px; font-weight:700; margin-bottom:2px; {% if is_proforma %}color:#b45f06;{% else %}color:#0b5394;{% endif %}">
+          {{ doc.get_type_document_display }}
+        </div>
+        <div class="muted">N°&nbsp;: {{ doc.numero|default:"—" }}</div>
+        <div class="muted">Date&nbsp;: {{ doc.date }}</div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+  <!-- Objet (ligne simple, sous l’entête) -->
+  {% if doc.objet %}
+    <div  style="margin-top:20px;">
+      <strong>Objet : {{ doc.objet }}</strong></div>
+  {% endif %}
+
+  <!-- Client -->
+  <div class="box" style="margin-top:20px;">
+    <strong>Client :</strong><br>
+    <strong>{{ doc.client.nom }}</strong><br>
+    {% if doc.client.adresse %}{{ doc.client.adresse }}<br>{% endif %}
+    {% if doc.client.telephone %}Tél: {{ doc.client.telephone }}<br>{% endif %}
+    {% if doc.client.email %}Email: {{ doc.client.email }}{% endif %}
+  </div>
+
+  <!-- Tableau des lignes -->
+  <table>
+    <thead>
+      <tr>
+        <th style="width:5%; text-align:center;">#</th>
+        <th style="width:40%">Produit</th>
+        <th class="text-right" style="width:8%">Quantité</th>
+        <th class="text-right" style="width:15%">PU (HT)</th>
+        <th class="text-right" style="width:12%">Remise</th>
+        <th class="text-right" style="width:25%">Montant (HT)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in doc.lignes.all %}
+        {% with net=l.montant_ht %}
+        <tr>
+          <td class="text-center">{{ forloop.counter }}</td>
+          <td>{{ l.produit.nom }}</td>
+          <td class="text-right">{{ l.quantite }}</td>
+          <td class="text-right">{{ l.prix_unitaire|money:0 }}</td>
+          <td class="text-right">
+            {% if l.remise_type == 'pourcentage' %}{{ l.remise_valeur|money:0 }} %{% elif l.remise_type == 'montant' %}{{ l.remise_valeur|money:0 }}{% else %}—{% endif %}
+          </td>
+          <td class="text-right">{{ net|money:0 }}</td>
+        </tr>
+        {% endwith %}
+      {% empty %}
+        <tr><td colspan="6" class="text-center muted">Aucune ligne</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totaux -->
+  <div class="totaux">
+    <table>
+      <tr>
+        <td class="label">Sous-total (HT)</td>
+        <td class="value">{{ doc.sous_total|money:0 }}</td>
+      </tr>
+      <tr>
+        <td class="label">Remise globale
+          {% if doc.remise_globale_type == 'pourcentage' %}
+            ({{ doc.remise_globale_valeur|money:0 }} %)
+          {% endif %}
+        </td>
+        <td class="value">- {{ doc.montant_remise_globale|money:0 }}</td>
+      </tr>
+      <tr>
+        <td class="label">Frais livraison</td>
+        <td class="value">{{ doc.frais_livraison|money:0 }}</td>
+      </tr>
+      <tr>
+        <td class="label"><strong>Total HT</strong></td>
+        <td class="value"><strong>{{ doc.total_ht|money:0 }}</strong></td>
+      </tr>
+      <tr>
+        <td class="label">TVA ({{ doc.tva|floatformat:0 }} %)</td>
+        <td class="value">{{ doc.total_tva|money:0 }}</td>
+      </tr>
+      <tr>
+        <td class="label"><strong>Total TTC</strong></td>
+        <td class="value"><strong>{{ doc.total_ttc|money:0 }}</strong></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Arrêté + signature -->
+  <div class="row" style="margin-top:20px; align-items: flex-start;">
+    <div style="flex:1; text-align: left;">
+      <em>
+        Arrêtée la présente {{ doc.get_type_document_display|lower }} à la somme TTC de
+        <strong>{{ montant_lettres }}</strong> (<strong>{{ doc.total_ttc|money:0 }}</strong>) francs CFA.
+      </em>
+    </div>
+  </div>
+  <div style="flex: 0 0 250px; text-align:right;">
+    <div class="signature" style="display:inline-block; text-align:left;">
+      <p><strong>Le Directeur,</strong></p>
+      <div style="height: 60px;"></div>
+      <p><strong>{{  entreprise.nom_signataire|default:"" }}</strong></p>
+    </div>
+  </div>
+
+  <div class="footer" style="margin-top:20px;">
+    {% if is_proforma %}
+      <span class="badge badge-proforma">PROFORMA</span>
+      <span class="muted">Document non fiscal - À valider.</span>
+    {% else %}
+      <span class="badge badge-facture">FACTURE</span>
+      <span class="muted">Merci pour votre confiance.</span>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+{% load static %}
+{% load entreprises_tags %}
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}FactiLila{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 (CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+      :root{
+        /* Ajuste ces variables à ton goût */
+        --navbar-height: 60px;        /* Hauteur de la barre du haut */
+        --sidebar-width: 200px;       /* Largeur de la sidebar en desktop */
+        --content-max-width: 1200px;  /* Largeur max du contenu pour un rendu plus élégant */
+      }
+
+      /* --- Layout global --- */
+      html, body { height: 100%; }
+      body{
+        background: #f7f8fb;
+        padding-top: var(--navbar-height); /* évite que le contenu passe sous la navbar fixed-top */
+      }
+
+      /* --- Navbar --- */
+      .navbar.fixed-top {
+        min-height: var(--navbar-height);
+        z-index: 1045; /* > sidebar (1030) pour éviter chevauchement */
+      }
+      .navbar-brand { font-weight: 700; letter-spacing: .2px; }
+
+      /* --- Sidebar (desktop ≥ lg) --- */
+      @media (min-width: 992px){
+        .sidebar-fixed{
+          position: fixed;
+          top: var(--navbar-height);        /* Démarre sous la navbar */
+          left: 0;
+          width: var(--sidebar-width);
+          height: calc(100vh - var(--navbar-height));
+          background: #ffffff;
+          border-right: 1px solid #eaeaea;
+          z-index: 1030;
+          overflow-y: auto;
+          padding: .75rem .75rem 1rem;
+        }
+        .main-wrap{
+          margin-left: var(--sidebar-width); /* Décale le contenu */
+          min-height: calc(100vh - var(--navbar-height));
+          padding: 1rem; /* respiration */
+        }
+      }
+
+      /* --- Mobile (< lg) : pas de sidebar fixe, on utilise l'offcanvas --- */
+      @media (max-width: 991.98px){
+        .main-wrap{ padding: 1rem; }
+      }
+
+      /* --- Navigation dans la sidebar --- */
+      .sidebar-title{
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        color: #6c757d;
+        margin: .25rem .35rem .35rem;
+      }
+      .sidebar .nav-link{
+        color: #223;
+        border-radius: .4rem;
+        font-weight: 500;
+        padding: .45rem .6rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* évite les chevauchements */
+      }
+      .sidebar .nav-link:hover{ background: rgba(0,0,0,.05); }
+      .sidebar .nav-link.active{
+        background: rgba(13, 110, 253, .08);
+        color: #0d6efd;
+        font-weight: 700;
+      }
+
+      /* --- Conteneur central pour un rendu plus "app" et moins "plein écran" --- */
+      .content-container{
+        max-width: var(--content-max-width);
+        margin: 0 auto; /* centre le contenu */
+      }
+
+      /* --- Cartes / esthétique --- */
+      .card{
+        border: 1px solid #eef0f3;
+        border-radius: .6rem;
+      }
+      .card-header{
+        background: #fff;
+        border-bottom: 1px solid #eef0f3;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Navbar fixée -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+     
+      <div class="container-fluid">
+        <!-- bouton sidebar mobile -->
+        <button class="btn btn-outline-light d-lg-none me-2"
+                type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+          ☰
+        </button>
+        {% include "includes/entreprise_switcher.html" %}
+        <a class="navbar-brand" href="{% url 'core:home' %}">FactiLila</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav"
+                aria-controls="topNav" aria-expanded="false" aria-label="Basculer la navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="topNav">
+          <ul class="navbar-nav me-auto">
+            <!-- Liens haut facultatifs -->
+          </ul>
+          {% if user.is_authenticated %}
+            {% can_manage_members as can_manage %}
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                  👤 {{ user.username }}{% if request.entreprise %} - {{ request.entreprise.nom_affichage|default:request.entreprise.nom }}{% endif %}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="{% url 'entreprises:profil' %}">Mon entreprise</a></li>
+                  {% if can_manage %}
+                    <li><a class="dropdown-item" href="{% url 'entreprises:gestion_membres' %}">Membres</a></li>
+                  {% endif %}
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <form method="post" action="{% url 'logout' %}" class="px-3">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger w-100" type="submit">⎋ Déconnexion</button>
+                    </form>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          {% else %}
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Se connecter</a></li>
+            </ul>
+          {% endif %}
+
+        </div>
+      </div>
+    </nav>
+    {% if messages %}
+      <div class="container mt-2">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Sidebar desktop fixe -->
+    <aside class="sidebar-fixed d-none d-lg-block sidebar">
+      <div class="sidebar-title">Général</div>
+      <ul class="nav flex-column mb-3">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.app_name == 'core' %}active{% endif %}"
+             href="{% url 'core:home' %}" title="Tableau de bord">
+            🏠 Tableau de bord
+          </a>
+        </li>
+      </ul>
+
+      <div class="sidebar-title">Vente</div>
+      <ul class="nav flex-column mb-3">
+        <li class="nav-item"><a class="nav-link" href="{% url 'factures:liste' %}" title="Factures">🧾 Factures</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'factures:liste_proformas' %}" title="Proformas">📄 Proformas</a></li>
+        <!-- Libellé court + tooltip pour éviter le chevauchement -->
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'factures:ajouter' %}" title="Nouvelle facture / proforma">➕ Nouvelle vente</a>
+        </li>
+      </ul>
+
+      <div class="sidebar-title">Référentiel</div>
+      <ul class="nav flex-column">
+        <li class="nav-item"><a class="nav-link" href="{% url 'clients:liste' %}" title="Clients">👥 Clients</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'produits:liste' %}" title="Produits">📦 Produits</a></li>
+      </ul>
+
+      {% if request.role_entreprise == 'admin' %}
+  <div class="sidebar-title">Administration</div>
+  <ul class="nav flex-column mb-3">
+    <li class="nav-item"><a class="nav-link" href="{% url 'entreprises:gestion_membres' %}">👥 Membres</a></li>
+  </ul>
+{% endif %}
+
+    </aside>
+
+    <!-- Sidebar mobile (offcanvas) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">Navigation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+      </div>
+      <div class="offcanvas-body sidebar">
+        <div class="sidebar-title">Général</div>
+        <ul class="nav flex-column mb-3">
+          <li class="nav-item"><a class="nav-link" href="{% url 'core:home' %}">🏠 Tableau de bord</a></li>
+        </ul>
+        <div class="sidebar-title">Vente</div>
+        <ul class="nav flex-column mb-3">
+          <li class="nav-item"><a class="nav-link" href="{% url 'factures:liste' %}">🧾 Factures</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'factures:liste_proformas' %}">📄 Proformas</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'factures:ajouter' %}">➕ Nouvelle vente</a></li>
+        </ul>
+        <div class="sidebar-title">Référentiel</div>
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link" href="{% url 'clients:liste' %}">👥 Clients</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'produits:liste' %}">📦 Produits</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="main-wrap">
+      <div class="content-container">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    <!-- JS Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Active tooltip (pour titres des liens tronqués) -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+        tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el))
+      });
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

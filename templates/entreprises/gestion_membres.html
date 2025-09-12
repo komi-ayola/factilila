@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load entreprises_tags %}
+
+{% block title %}Gestion des membres{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">Gestion des membres de l'entreprise</h3>
+
+<div class="row g-3">
+  <!-- Colonne gauche : formulaires -->
+  <div class="col-lg-4">
+    <!-- Form 1 : Ajouter un membre existant -->
+    <div class="card shadow-sm">
+      <div class="card-header"><strong>Ajouter un membre existant</strong></div>
+      <div class="card-body">
+        <form method="post" action="{% url 'entreprises:ajouter_membre' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Utilisateur (username ou email)</label>
+            {{ form_add.user_identifier }}
+            {% if form_add.user_identifier.errors %}
+              <div class="text-danger small mt-1">{{ form_add.user_identifier.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Rôle</label>
+            {{ form_add.role }}
+            {% if form_add.role.errors %}
+              <div class="text-danger small mt-1">{{ form_add.role.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Ajouter</button>
+          <div class="form-text mt-2">
+            Utilisez cette option si l’utilisateur a déjà un compte.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Form 2 : Créer un utilisateur + l’ajouter -->
+    <div class="card shadow-sm mt-3">
+      <div class="card-header"><strong>Créer un utilisateur + l’ajouter</strong></div>
+      <div class="card-body">
+        <form method="post" action="{% url 'entreprises:creer_utilisateur_membre' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Nom d'utilisateur</label>
+            {{ form_create.username }}
+            {% if form_create.username.errors %}
+              <div class="text-danger small mt-1">{{ form_create.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            {{ form_create.email }}
+            {% if form_create.email.errors %}
+              <div class="text-danger small mt-1">{{ form_create.email.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Rôle</label>
+            {{ form_create.role }}
+            {% if form_create.role.errors %}
+              <div class="text-danger small mt-1">{{ form_create.role.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <button class="btn btn-outline-primary w-100" type="submit">Créer & envoyer le lien</button>
+          <div class="form-text mt-2">
+            Un e-mail “Définir mon mot de passe” sera envoyé à l’utilisateur.
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Colonne droite : tableau des membres -->
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>Membres actuels</strong>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in membres %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ m.user.username }}</td>
+                <td>{{ m.user.email|default:"—" }}</td>
+                <td>
+                  {% if m.user_id == entreprise.proprietaire_id %}
+                    <span class="badge bg-dark">Propriétaire</span>
+                  {% else %}
+                    {{ m.role|role_badge|safe }}
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if m.user_id == entreprise.proprietaire_id %}
+                    <span class="text-muted">—</span>
+                  {% else %}
+                    <!-- Form changer rôle -->
+                    <form method="post" action="{% url 'entreprises:changer_role' m.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <select name="role" class="form-select form-select-sm d-inline-block w-auto me-2">
+                        {% for val,label in m.ROLES %}
+                          <option value="{{ val }}" {% if m.role == val %}selected{% endif %}>
+                            {{ label }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                      <button class="btn btn-sm btn-outline-secondary" type="submit">Mettre à jour</button>
+                    </form>
+
+                    <!-- Form retirer -->
+                    <form method="post" action="{% url 'entreprises:retirer_membre' m.id %}" class="d-inline ms-2">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-danger"
+                              onclick="return confirm('Supprimer ce membre ?')"
+                              type="submit">Retirer</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-3">
+                  Aucun membre pour le moment.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
