@@ -37,6 +37,7 @@
                 <a class="btn btn-sm btn-outline-primary" href="{% url 'factures:modifier' f.pk %}">Modifier</a>
                 <a class="btn btn-sm btn-outline-danger" href="{% url 'factures:supprimer' f.pk %}">Supprimer</a>
                 <a class="btn btn-sm btn-outline-dark" href="{% url 'factures:pdf' f.pk %}" target="_blank">PDF</a>
+                <a href="{% url 'factures:bordereau' f.pk %}" class="btn btn-sm btn-secondary">BDL</a>
               </td>
             </tr>
           {% empty %}

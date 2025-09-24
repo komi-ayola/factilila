@@ -390,3 +390,45 @@ def document_pdf(request, pk):
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response
+
+@login_required
+def bordereau_livraison(request, pk):
+    ent = request.entreprise
+    facture = get_object_or_404(Facture, pk=pk, entreprise=ent)
+    lignes = facture.lignes.all()
+
+    # Logo entreprise (comme pour les factures)
+    logo_path = None
+    if ent and getattr(ent, 'logo', None):
+        p = ent.logo.path
+        if os.path.exists(p):
+            logo_path = 'file:///' + p.replace('\\', '/')
+
+    # Rendu HTML du template bordereau
+    html = render_to_string('factures/bordereau_livraison.html', {
+        'facture': facture,
+        'lignes': lignes,
+        'entreprise': ent,
+        'logo_path': logo_path,
+        'request': request,
+    })
+
+    # Options PDF
+    options = {
+        'page-size': 'A4',
+        'margin-top': '10mm',
+        'margin-right': '10mm',
+        'margin-bottom': '12mm',
+        'margin-left': '10mm',
+        'encoding': "UTF-8",
+        'enable-local-file-access': None,  # important pour que wkhtmltopdf lise les images locales
+    }
+
+    # Génération PDF
+    config = pdfkit.configuration(wkhtmltopdf=getattr(settings, 'WKHTMLTOPDF_CMD', 'wkhtmltopdf'))
+    pdf = pdfkit.from_string(html, False, options=options, configuration=config)
+
+    filename = f"BDL_{facture.numero or facture.pk}.pdf"
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response

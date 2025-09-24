@@ -21,4 +21,7 @@ urlpatterns = [
     path('proformas/<int:pk>/convertir/', views.convertir_proforma, name='convertir'),
 
     path('<int:pk>/pdf/', views.document_pdf, name='pdf'),
+
+    path('<int:pk>/bordereau/', views.bordereau_livraison, name='bordereau'),
+    
 ]

@@ -1,0 +1,124 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Bordereau de livraison {{ facture.numero|default:"—" }}</title>
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 14px; color: #222; }
+    h1, h2, h3 { margin: 0 0 6px 0; }
+    .header, .footer { width: 100%; }
+    .footer { margin-top: 12px; font-size: 11px; color: #666; }
+
+    .box { border: 1px solid #ddd; padding: 8px; border-radius: 4px; }
+    .muted { color: #666; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { border: 1px solid #ddd; padding: 6px; }
+    th { background: #f8f9fa; text-align: left; }
+    .bdl  { color: #2e7d32; }
+    .badge-bdl {
+        background: #e2f7d7;   /* vert clair pour différencier */
+        color: #2e7d32;        /* vert foncé */
+        border: 1px solid #a5d6a7;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 11px;
+    }
+
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .watermark {
+      position: fixed; top: 40%; left: 10%; opacity: 0.08; font-size: 100px; transform: rotate(-20deg);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="watermark">BORDEAU</div>
+
+  <!-- En-tête -->
+  <div class="header" style="margin-bottom:20px;">
+    <table role="presentation" style="width:100%; border-collapse:collapse; table-layout:fixed; border:0;">
+      <tr>
+        {% if facture.entreprise.logo %}
+          <td style="width:160px; vertical-align:top; border:0; padding:0;">
+            <img src="file:///{{ facture.entreprise.logo.path }}" alt="Logo" style="height:64px; display:block;">
+          </td>
+          <td style="vertical-align:top; border:0; padding:0;">
+            <div style="font-weight:700;">{{ facture.entreprise.nom }}</div>
+            {% if facture.entreprise.ville or facture.entreprise.pays %}
+              {{ facture.entreprise.ville|default_if_none:"" }}{% if facture.entreprise.ville and facture.entreprise.pays %}, {% endif %}{{ facture.entreprise.pays|default:"Togo" }}<br>
+            {% endif %}
+            {% if facture.entreprise.telephone %}Tél&nbsp;: {{ facture.entreprise.telephone }}<br>{% endif %}
+            {% if facture.entreprise.email %}Email&nbsp;: {{ facture.entreprise.email }}{% endif %}
+          </td>
+        {% else %}
+          <td style="vertical-align:top; border:0; padding:0;">
+            <div style="font-weight:700;">{{ facture.entreprise.nom }}</div>
+          </td>
+        {% endif %}
+
+        <td style="width:230px; vertical-align:top; text-align:right; border:0; padding:0;">
+          <div style="font-size:20px; font-weight:700; color:#2e7d32;">
+            Bordereau de livraison
+          </div>
+          <div >N°&nbsp;: {{ facture.numero|default:"—" }}</div>
+          <div >Date&nbsp;: {{ facture.date }}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <!-- Objet (ligne simple, sous l’entête) -->
+  {% if facture.objet %}
+    <div  style="margin-top:20px;">
+      <strong>Objet : {{ facture.objet }}</strong></div>
+  {% endif %}
+
+  <!-- Client -->
+  <div class="box" style="margin-top:20px;">
+    <strong>Client :</strong><br>
+    <strong>{{ facture.client.nom }}</strong><br>
+    {% if facture.client.adresse %}{{ facture.client.adresse }}<br>{% endif %}
+    {% if facture.client.telephone %}Tél: {{ facture.client.telephone }}<br>{% endif %}
+    {% if facture.client.email %}Email: {{ facture.client.email }}{% endif %}
+  </div>
+
+  <!-- Tableau des produits -->
+  <table>
+    <thead>
+      <tr>
+        <th style="width:5%; text-align:center;">#</th>
+        <th style="width:50%">Produit</th>
+        <th class="text-right" style="width:15%">Quantité</th>
+        <th style="width:30%">Observation</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in lignes %}
+        <tr>
+          <td class="text-center">{{ forloop.counter }}</td>
+          <td>{{ l.produit.nom }}</td>
+          <td class="text-right">{{ l.quantite }}</td>
+          <td></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="text-center muted">Aucune ligne</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Signature -->
+  <div style="margin-top:40px; text-align:right;">
+    <p>Pour {{ facture.entreprise.nom }}</p>
+  </div>
+
+    <div class="footer" style="margin-top:200px;">
+        <span class="badge-bdl">BDL</span>
+        <span class="muted">Document non fiscal - À titre de livraison uniquement.</span>
+    </div>
+
+
+</body>
+</html>
